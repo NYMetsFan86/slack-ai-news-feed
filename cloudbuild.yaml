@@ -1,0 +1,32 @@
+# Cloud Build configuration for CI/CD
+steps:
+  # Install dependencies
+  - name: 'python:3.11'
+    entrypoint: pip
+    args: ['install', '-r', 'requirements.txt', '-t', '.']
+
+  # Run tests (if any)
+  - name: 'python:3.11'
+    entrypoint: python
+    args: ['-m', 'pytest', 'tests/', '-v']
+    env:
+      - 'ENVIRONMENT=test'
+
+  # Deploy to Cloud Functions
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args:
+      - gcloud
+      - functions
+      - deploy
+      - ai-news-summarizer
+      - --source=.
+      - --trigger-topic=ai-news-trigger
+      - --runtime=python311
+      - --entry-point=main_function_digest
+      - --memory=512MB
+      - --timeout=540s
+      - --region=us-central1
+      - --set-env-vars=ENVIRONMENT=production,FIRESTORE_COLLECTION=processed_items
+
+# Timeout for entire build
+timeout: 1200s

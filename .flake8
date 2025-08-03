@@ -1,0 +1,22 @@
+[flake8]
+max-line-length = 120
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    .pytest_cache,
+    cloud_function_package
+ignore = 
+    # Allow lambda expressions
+    E731,
+    # Allow line break before binary operator (W503 is deprecated)
+    W503
+per-file-ignores =
+    # Allow imports at bottom of file for tests
+    tests/*.py:E402

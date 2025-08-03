@@ -1,0 +1,148 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Build
+dist/
+build/
+*.egg-info/
+deployment.zip
+lambda_package/
+*.whl
+
+# Google Cloud Platform
+.gcloud/
+*.json
+!package.json
+!package-lock.json
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Logs
+*.log
+logs/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.nox/
+.coverage.*
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Environments
+.env.development
+.env.production
+.env.test
+
+# IDE - PyCharm
+.idea/
+*.iml
+*.iws
+
+# IDE - VSCode  
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+# Secret files
+*_secret*
+*_private*
+service-account*.json
+credentials*.json
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swn
+*.orig
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache directories
+.cache/
+__pycache__/
+
+# Generated files
+get-pip.py
+
+# Google Cloud SDK
+google-cloud-sdk/
+google-cloud-cli-*.tar.gz
+gcloud/
+
+# Git setup scripts (contain credentials)
+git_setup.sh
+git_private_setup.sh
+git_push_with_token.sh
+
+# Test outputs
+test_run_*.log
+test_output.log
+test_*.log
+
+# Node modules (if any)
+node_modules/
+
+# Cloud Function deployment packages
+cloud_function_package/
+
+# Large binaries
+*.tar.gz
+*.zip

@@ -1,0 +1,25 @@
+# Google Cloud Functions deployment configuration
+# This file is used for App Engine deployments (alternative to Cloud Functions)
+
+runtime: python311
+
+# Environment variables (set these in Cloud Console for production)
+env_variables:
+  ENVIRONMENT: "production"
+  FIRESTORE_COLLECTION: "processed_items"
+  # OPENROUTER_API_KEY: set via Cloud Console
+  # SLACK_WEBHOOK_URL: set via Cloud Console
+  # GOOGLE_CLOUD_PROJECT: automatically set
+
+# Instance configuration
+instance_class: F1
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 0
+  max_instances: 2
+
+# Handlers (for App Engine)
+handlers:
+- url: /.*
+  script: auto
+  secure: always

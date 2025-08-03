@@ -1,0 +1,13 @@
+openai==1.35.0
+python-dotenv==1.0.0
+requests==2.31.0
+beautifulsoup4==4.12.2
+google-cloud-firestore==2.13.0
+google-cloud-logging==3.8.0
+google-cloud-error-reporting==1.9.0
+functions-framework==3.5.0
+cloudevents==1.10.1
+feedparser==6.0.10
+lxml==4.9.3
+urllib3==2.0.7  # Security fix for requests
+psutil==5.9.8  # Memory monitoring
