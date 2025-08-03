@@ -1,7 +1,7 @@
 import openai
 import logging
 import time
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from .config import Config
 from .rate_limiter import rate_limit
@@ -25,13 +25,22 @@ class LLMClient:
         if not content:
             return None
 
-        system_prompt = """You are an AI news summarizer for a business audience. Your task is to:
-1. Identify and highlight AI-related content within the provided article
-2. Create 3-5 concise bullet points summarizing the key information
-3. Focus on practical implications, business relevance, and why it matters
-4. Avoid highly technical jargon unless necessary
-5. If the article is not related to AI, still summarize but note the general tech relevance
+        system_prompt = """You are an AI news curator with a focus on consumer-facing AI tools and practical applications.
 
+PRIORITIZE content about:
+- Updates to ChatGPT, Claude, Gemini, Perplexity, or other major AI assistants
+- New AI features in popular apps (Microsoft, Google, Apple, etc.)
+- Practical AI tools regular people can use today
+- Business implications that affect everyday users
+
+SKIP or briefly mention:
+- Technical chip announcements (unless game-changing)
+- Academic research papers
+- Infrastructure/backend updates
+- Developer-only tools
+
+Create 2-3 punchy bullet points that answer "Why should I care?" 
+Keep it conversational and exciting - think "The Neuron" newsletter style.
 Format: Return ONLY bullet points, one per line, starting with "• "."""
 
         user_prompt = f"""Article Title: {title}
@@ -70,16 +79,26 @@ Please summarize this podcast episode in 3-5 bullet points, focusing on key AI i
     def generate_ai_tip(self) -> Optional[str]:
         """Generate an AI Tip of the Day"""
         topics = [
-            "practical AI usage in daily work",
-            "prompt engineering best practices",
-            "understanding AI capabilities and limitations",
-            "AI ethics and responsible use",
-            "AI tools for productivity",
-            "demystifying AI concepts",
-            "AI in business decision-making",
-            "future of work with AI",
-            "AI collaboration strategies",
-            "data privacy and AI"
+            "new free AI tools or websites to try",
+            "ChatGPT/Claude/Gemini productivity hacks",
+            "AI features in apps you already use",
+            "quick AI tricks that save time",
+            "comparing different AI assistants",
+            "AI prompts that actually work",
+            "free alternatives to paid AI tools",
+            "AI features most people don't know about",
+            "practical AI uses for everyday tasks",
+            "AI tools for creative projects",
+            "AI browser extensions that boost productivity",
+            "AI meeting assistants and note-takers",
+            "AI tools for social media content",
+            "AI-powered research and fact-checking tools",
+            "AI writing assistants beyond ChatGPT",
+            "AI tools for data analysis without coding",
+            "AI image and video editing shortcuts",
+            "AI tools for learning new skills",
+            "team collaboration AI tools",
+            "AI automation for repetitive tasks"
         ]
 
         # Rotate through topics based on current day
@@ -87,24 +106,135 @@ Please summarize this podcast episode in 3-5 bullet points, focusing on key AI i
         random.seed()  # Use current time for randomness
         topic = random.choice(topics)
 
-        system_prompt = f"""You are an AI educator creating daily tips for business professionals.
-Create a clear, practical, and engaging AI tip about: {topic}
+        system_prompt = f"""You are writing practical AI tips for people who want to get more out of AI tools.
+Create an exciting, actionable tip about: {topic}
 
 Requirements:
-- Keep it between 150-300 characters (1-2 sentences)
-- Make it immediately actionable with a specific technique or tool
-- Use simple, clear language without jargon
-- Include a concrete example or specific use case
-- Focus on practical value for everyday work
-- Be encouraging and positive about AI adoption
+- 1-2 sentences max (under 200 characters)
+- Name a specific tool, feature, or technique
+- Make it something they can try RIGHT NOW
+- Use casual, enthusiastic language
+- Focus on "wow factor" or time-saving potential
 
-Good example: "Try the '5W1H' prompt technique: Start your AI requests with Who, What, When, Where, Why, or How for clearer responses. Example: 'What are the key benefits of cloud computing for small businesses?'"
-Bad example: "AI can help with many tasks in various ways across different domains."""
+Good examples:
+"🎯 Try Perplexity's 'Focus' mode for research - it cites sources like Wikipedia or Reddit only. Perfect for fact-checking!"
+"💡 ChatGPT can analyze photos now! Upload a receipt and ask it to create an expense report. Works in the free version!"
+"🚀 Google Docs has AI now: Type '@' to summarize, rewrite, or brainstorm. Hidden in plain sight!"
+
+Bad example: "AI can help improve your productivity in various ways."""
 
         user_prompt = "Generate today's AI tip for business professionals."
 
         response = self._make_request(system_prompt, user_prompt, parse_bullets=False)
         return response[0] if response else None
+
+    def extract_tool_from_article(self, title: str, content: str) -> Optional[Dict[str, str]]:
+        """Extract AI tool mention from article if present"""
+        system_prompt = """You are analyzing tech news articles to identify new AI tool launches or updates.
+
+If the article mentions a NEW AI tool, app, or feature that readers can actually use, extract it.
+
+ONLY extract if:
+- It's a consumer-facing AI tool (not infrastructure/chips/research)
+- It has a clear name and purpose
+- Users can actually try it (launched/available, not "coming soon")
+
+Return NOTHING if the article is about:
+- AI policy, regulation, or ethics
+- Company earnings or business news
+- Technical infrastructure
+- Research papers
+- Vague AI initiatives
+
+Format EXACTLY:
+TOOL_NAME: [exact tool name]
+DESCRIPTION: [1-2 sentences about what it does and why users should care]
+LINK: [tool's website if mentioned, otherwise 'See article']"""
+
+        user_prompt = f"""Article Title: {title}
+
+Content: {content[:2000]}
+
+Extract any new AI tool if this article announces one."""
+
+        response = self._make_request(system_prompt, user_prompt, parse_bullets=False)
+        
+        if response and response[0] and "TOOL_NAME:" in response[0]:
+            lines = response[0].strip().split('\n')
+            tool_data = {}
+            
+            for line in lines:
+                if line.startswith('TOOL_NAME:'):
+                    tool_data['name'] = line.replace('TOOL_NAME:', '').strip()
+                elif line.startswith('DESCRIPTION:'):
+                    tool_data['description'] = line.replace('DESCRIPTION:', '').strip()
+                elif line.startswith('LINK:'):
+                    tool_data['link'] = line.replace('LINK:', '').strip()
+            
+            if all(k in tool_data for k in ['name', 'description', 'link']):
+                return tool_data
+        
+        return None
+
+    def generate_tool_spotlight(self) -> Optional[Dict[str, str]]:
+        """Generate a featured AI tool recommendation"""
+        categories = [
+            "AI writing assistants",
+            "AI image generators",
+            "AI productivity tools",
+            "AI research tools",
+            "AI meeting assistants",
+            "AI design tools",
+            "AI coding assistants",
+            "AI data analysis tools",
+            "AI marketing tools",
+            "AI learning platforms"
+        ]
+        
+        import random
+        category = random.choice(categories)
+        
+        system_prompt = f"""You are recommending useful AI tools for business professionals.
+        
+Generate a tool spotlight for the category: {category}
+
+Requirements:
+- Focus on tools that are FREE or have generous free tiers
+- Must be something people can start using TODAY
+- Include practical use cases
+- Make it exciting but factual
+
+Format your response EXACTLY like this:
+TOOL_NAME: [name of the tool]
+DESCRIPTION: [2-3 sentence description of what it does and why it's useful]
+LINK: [actual website URL]
+
+Example:
+TOOL_NAME: Gamma
+DESCRIPTION: Create beautiful presentations in minutes using AI. Just type what you want to present, and Gamma generates professional slides with design, images, and content. Perfect for last-minute presentations!
+LINK: https://gamma.app"""
+
+        user_prompt = "Generate today's AI tool spotlight."
+        
+        response = self._make_request(system_prompt, user_prompt, parse_bullets=False)
+        
+        if response and response[0]:
+            # Parse the response
+            lines = response[0].strip().split('\n')
+            tool_data = {}
+            
+            for line in lines:
+                if line.startswith('TOOL_NAME:'):
+                    tool_data['name'] = line.replace('TOOL_NAME:', '').strip()
+                elif line.startswith('DESCRIPTION:'):
+                    tool_data['description'] = line.replace('DESCRIPTION:', '').strip()
+                elif line.startswith('LINK:'):
+                    tool_data['link'] = line.replace('LINK:', '').strip()
+            
+            if all(k in tool_data for k in ['name', 'description', 'link']):
+                return tool_data
+        
+        return None
 
     @rate_limit('openrouter', calls_per_minute=30)
     @circuit_breaker(failure_threshold=3, recovery_timeout=120, expected_exception=openai.APIError)

@@ -10,7 +10,7 @@ from .rss_parser import RSSParser
 from .web_scraper import WebScraper
 from .llm_client import LLMClient
 from .firestore_client import FirestoreClient
-from .slack_digest import SlackDigest
+from .slack_digest_v2 import SlackDigest
 from .logging_config import configure_logging
 from .monitoring import ResourceGuard, monitor_memory
 
@@ -65,6 +65,9 @@ def main_function_digest(cloud_event: Any) -> None:
             logger.error(f"Error generating AI tip: {e}")
             digest.increment_errors()
         
+        # Track tool spotlight
+        tool_spotlight_found = False
+        
         # Fetch all RSS feeds
         logger.info("Fetching RSS feeds")
         all_items = rss_parser.fetch_all_feeds()
@@ -103,6 +106,18 @@ def main_function_digest(cloud_event: Any) -> None:
                         # Add to digest instead of sending immediately
                         digest.add_news_item(article, summary)
                         news_processed += 1
+                        
+                        # Look for tool mentions if we haven't found one yet
+                        if not tool_spotlight_found:
+                            tool_info = llm_client.extract_tool_from_article(article['title'], content)
+                            if tool_info:
+                                digest.set_tool_spotlight(
+                                    tool_info['name'],
+                                    tool_info['description'],
+                                    tool_info['link'] if tool_info['link'] != 'See article' else article['url']
+                                )
+                                tool_spotlight_found = True
+                                logger.info(f"Found tool spotlight: {tool_info['name']}")
                         
                         # Mark as processed
                         db_client.mark_url_processed(article['url'], {
@@ -166,6 +181,21 @@ def main_function_digest(cloud_event: Any) -> None:
                     logger.error(f"Error processing podcast {episode['url']}: {e}")
                     digest.increment_errors()
                     continue
+        
+        # If no tool spotlight found in articles, generate one
+        if not tool_spotlight_found:
+            try:
+                logger.info("No tool found in articles, generating tool spotlight")
+                tool_info = llm_client.generate_tool_spotlight()
+                if tool_info:
+                    digest.set_tool_spotlight(
+                        tool_info['name'],
+                        tool_info['description'],
+                        tool_info['link']
+                    )
+                    logger.info(f"Generated tool spotlight: {tool_info['name']}")
+            except Exception as e:
+                logger.error(f"Error generating tool spotlight: {e}")
         
         # Send the complete digest
         logger.info(f"Sending daily digest to Slack (news: {news_processed}, podcasts: {podcasts_processed})")

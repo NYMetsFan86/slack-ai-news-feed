@@ -11,7 +11,7 @@ class Config:
     # OpenRouter Configuration
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
     OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-    OPENROUTER_MODEL = "meta-llama/llama-3.1-8b-instruct:free"
+    OPENROUTER_MODEL = "mistralai/mistral-7b-instruct:free"  # Updated to available free model
 
     # Slack Configuration
     SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
@@ -49,6 +49,42 @@ class Config:
             "name": "Science Daily AI",
             "url": "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml",
             "type": "news"
+        },
+        # AI Tool & Product Launch Feeds
+        {
+            "name": "Daily AI",
+            "url": "https://dailyai.com/feed",
+            "type": "news"
+        },
+        {
+            "name": "MarkTechPost",
+            "url": "https://www.marktechpost.com/feed/",
+            "type": "news"
+        },
+        {
+            "name": "AI News - Artificial Intelligence News",
+            "url": "https://artificialintelligence-news.com/feed/rss/",
+            "type": "news"
+        },
+        {
+            "name": "BAIR Blog - Berkeley AI Research",
+            "url": "https://bair.berkeley.edu/blog/feed.xml",
+            "type": "news"
+        },
+        {
+            "name": "AI Business",
+            "url": "https://aibusiness.com/rss.xml",
+            "type": "news"
+        },
+        {
+            "name": "Analytics India Magazine",
+            "url": "https://analyticsindiamag.com/feed/",
+            "type": "news"
+        },
+        {
+            "name": "TechRepublic AI",
+            "url": "https://www.techrepublic.com/rssfeeds/topic/artificial-intelligence/",
+            "type": "news"
         }
     ]
 
@@ -71,7 +107,9 @@ class Config:
     ]
 
     # Processing Configuration
-    MAX_ARTICLES_PER_FEED = 3  # Limit articles per feed to avoid overwhelming
+    MAX_ARTICLES_PER_FEED = 2  # Limit articles per feed to avoid overwhelming (reduced due to more feeds)
+    MAX_NEWS_ITEMS = 5  # Maximum news items in digest (increased to accommodate AI tool feeds)
+    MAX_PODCAST_ITEMS = 3  # Maximum podcast items in digest
     MAX_RETRIES = 3
     RETRY_DELAY = 2  # seconds
     REQUEST_TIMEOUT = 30  # seconds

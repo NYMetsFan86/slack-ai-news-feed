@@ -18,6 +18,7 @@ class SlackDigest:
         self.news_items: List[Dict[str, Any]] = []
         self.podcast_items: List[Dict[str, Any]] = []
         self.ai_tip: Optional[str] = None
+        self.tool_spotlight: Optional[Dict[str, str]] = None
         self.stats: Dict[str, int] = {'news_count': 0, 'podcast_count': 0, 'errors': 0}
     
     def add_news_item(self, article: Dict[str, Any], summary: List[str]) -> None:
@@ -40,32 +41,31 @@ class SlackDigest:
         """Set the AI tip of the day"""
         self.ai_tip = tip
     
+    def set_tool_spotlight(self, tool_name: str, description: str, link: str) -> None:
+        """Set the AI tool spotlight"""
+        self.tool_spotlight = {
+            'name': tool_name,
+            'description': description,
+            'link': link
+        }
+    
     def increment_errors(self) -> None:
         """Track error count"""
         self.stats['errors'] += 1
     
     def build_digest(self) -> List[Dict[str, Any]]:
-        """Build the complete digest message blocks"""
+        """Build the complete digest message blocks with new ordering"""
         blocks = []
         
-        # Header
+        # Header - more casual and exciting
         blocks.extend([
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"🤖 AI Daily Digest - {datetime.now().strftime('%B %d, %Y')}",
+                    "text": f"🤖 Your AI Daily Digest • {datetime.now().strftime('%B %d')}",
                     "emoji": True
                 }
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"Your daily AI news roundup • {self.stats['news_count']} articles • {self.stats['podcast_count']} podcasts"
-                    }
-                ]
             },
             {"type": "divider"}
         ])
@@ -77,7 +77,7 @@ class SlackDigest:
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"💡 *AI TIP OF THE DAY* 💡"
+                        "text": "💡 *AI TIP OF THE DAY* 💡"
                     }
                 },
                 {
@@ -85,6 +85,26 @@ class SlackDigest:
                     "text": {
                         "type": "mrkdwn",
                         "text": sanitize_text_for_slack(self.ai_tip)
+                    }
+                },
+                {"type": "divider"}
+            ])
+        
+        # Tool Spotlight (if available)
+        if self.tool_spotlight:
+            blocks.extend([
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "🔧 *TOOL SPOTLIGHT* 🔧"
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*<{self.tool_spotlight['link']}|{sanitize_text_for_slack(self.tool_spotlight['name'])}>*\n{sanitize_text_for_slack(self.tool_spotlight['description'])}"
                     }
                 },
                 {"type": "divider"}
@@ -100,12 +120,51 @@ class SlackDigest:
                 }
             })
             
-            for item in self.podcast_items[:3]:  # Limit to 3 podcasts
+            # Limit to 3 most recent podcasts
+            for item in self.podcast_items[:Config.MAX_PODCAST_ITEMS]:
+                episode = item['episode']
+                summary = item['summary']
+                
+                safe_title = sanitize_text_for_slack(episode.get('title', 'No Title'))
+                safe_summary = [sanitize_text_for_slack(point) for point in summary[:2]]  # Limit to 2 bullet points
+                safe_feed = sanitize_text_for_slack(episode.get('feed_name', 'Unknown'))
+                
+                blocks.extend([
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*<{episode.get('url', '#')}|{safe_title}>*\n_{safe_feed}_"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "\n".join([f"• {point}" for point in safe_summary])
+                        }
+                    }
+                ])
+            
+            blocks.append({"type": "divider"})
+        
+        # News Articles Second
+        if self.news_items:
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "📰 *TODAY'S AI NEWS*"
+                }
+            })
+            
+            # Limit to 3 most relevant news items
+            for item in self.news_items[:Config.MAX_NEWS_ITEMS]:
                 article = item['article']
                 summary = item['summary']
                 
                 safe_title = sanitize_text_for_slack(article.get('title', 'No Title'))
-                safe_summary = [sanitize_text_for_slack(point) for point in summary]
+                safe_summary = [sanitize_text_for_slack(point) for point in summary[:2]]  # Limit to 2 bullet points
                 safe_feed = sanitize_text_for_slack(article.get('feed_name', 'Unknown'))
                 
                 blocks.extend([
@@ -127,65 +186,16 @@ class SlackDigest:
             
             blocks.append({"type": "divider"})
         
-        # Podcasts
-        if self.podcast_items:
-            blocks.append({
-                "type": "section",
-                "text": {
+        # Simplified footer
+        blocks.append({
+            "type": "context",
+            "elements": [
+                {
                     "type": "mrkdwn",
-                    "text": "🎙️ *Today's AI Podcasts*"
+                    "text": "🤖 _AI Daily Digest • Delivered weekdays at 8 AM MST_"
                 }
-            })
-            
-            for item in self.podcast_items[:6]:  # Show up to 6 episodes (weekend catch-up)
-                episode = item['episode']
-                summary = item['summary']
-                
-                safe_title = sanitize_text_for_slack(episode.get('title', 'No Title'))
-                safe_summary = [sanitize_text_for_slack(point) for point in summary]
-                safe_feed = sanitize_text_for_slack(episode.get('feed_name', 'Unknown'))
-                duration = episode.get('duration', '')
-                
-                blocks.extend([
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"*<{episode.get('url', '#')}|{safe_title}>*\n_{safe_feed}_ {f'• {duration}' if duration else ''}"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "\n".join([f"• {point}" for point in safe_summary])
-                        }
-                    }
-                ])
-            
-            blocks.append({"type": "divider"})
-        
-        # Footer
-        blocks.extend([
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"📊 Processed: {self.stats['news_count']} news articles, {self.stats['podcast_count']} podcasts • ⚠️ Errors: {self.stats['errors']}"
-                    }
-                ]
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": "🤖 _Powered by AI News Summarizer_ • <https://github.com/NYMetsFan86/slack-ai-news-feed|View on GitHub>"
-                    }
-                ]
-            }
-        ])
+            ]
+        })
         
         return blocks  # type: ignore[return-value]
     
