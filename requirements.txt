@@ -6,5 +6,5 @@ google-cloud-firestore==2.13.0
 google-cloud-error-reporting==1.9.0
 functions-framework==3.5.0
 feedparser==6.0.10
-urllib3==2.2.2  # Security fix
+urllib3==2.5.0  # Security fix
 psutil==5.9.8  # Memory monitoring
