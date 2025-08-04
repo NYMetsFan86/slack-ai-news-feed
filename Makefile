@@ -46,7 +46,7 @@ clean:
 	rm -rf .mypy_cache/
 
 deploy:
-	cd deployment && ./deploy_to_gcp.sh
+	./scripts/deploy_production.sh
 
 logs:
 	gcloud functions logs read ai-news-summarizer --limit=50
@@ -59,10 +59,10 @@ dev-test:
 	python -m src.main
 
 test-slack:
-	python quick_test.py
+	python tests/quick_test.py
 
 test-slack-interactive:
-	python test_slack_post.py
+	python tests/test_slack_post.py
 
 test-feeds:
 	python tests/test_rss_feed.py

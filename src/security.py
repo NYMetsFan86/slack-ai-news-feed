@@ -83,8 +83,17 @@ def sanitize_text_for_slack(text: str) -> str:
     if not text:
         return ""
 
-    # Escape HTML entities
-    text = html.escape(text)
+    # Slack mrkdwn format requires escaping these characters
+    # https://api.slack.com/reference/surfaces/formatting#escaping
+    slack_special_chars = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;'
+    }
+    
+    # Replace only the characters that Slack requires escaping
+    for char, escaped in slack_special_chars.items():
+        text = text.replace(char, escaped)
 
     # Limit length to prevent oversized messages
     max_length = 3000
