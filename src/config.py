@@ -103,6 +103,11 @@ class Config:
             "name": "AI Lawyer Talking Tech",
             "url": "https://anchor.fm/s/d9c4eb70/podcast/rss",
             "type": "podcast"
+        },
+        {
+            "name": "The Neuron",
+            "url": "https://anchor.fm/s/f51d3fd0/podcast/rss",
+            "type": "podcast"
         }
     ]
 

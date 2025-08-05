@@ -14,6 +14,7 @@ from .firestore_client import FirestoreClient
 from .slack_digest import SlackDigest
 from .logging_config import configure_logging
 from .monitoring import ResourceGuard, monitor_memory
+from .ai_content_filter import AIContentFilter
 
 # Configure secure logging
 configure_logging(level="INFO")
@@ -85,8 +86,13 @@ def main_function_digest(cloud_event: Any) -> None:
         logger.info("Fetching RSS feeds")
         all_items = rss_parser.fetch_all_feeds()
         
+        # Filter for AI-related content
+        logger.info("Filtering for AI-related content")
+        all_items['news'] = AIContentFilter.filter_items(all_items['news'])
+        all_items['podcast'] = AIContentFilter.filter_items(all_items['podcast'])
+        
         # Process news articles
-        logger.info(f"Processing {len(all_items['news'])} news items")
+        logger.info(f"Processing {len(all_items['news'])} AI-related news items")
         with ResourceGuard("news_processing", memory_threshold=80.0):
             for article in all_items['news']:
                 try:
@@ -126,7 +132,7 @@ def main_function_digest(cloud_event: Any) -> None:
                     continue
         
         # Process podcast episodes
-        logger.info(f"Processing {len(all_items['podcast'])} podcast items")
+        logger.info(f"Processing {len(all_items['podcast'])} AI-related podcast items")
         with ResourceGuard("podcast_processing", memory_threshold=80.0):
             for episode in all_items['podcast']:
                 try:
