@@ -14,6 +14,8 @@ venv.bak/
 .env
 .env.local
 .env.*.local
+.env.gcp
+env-vars.yaml
 
 # IDE
 .vscode/
