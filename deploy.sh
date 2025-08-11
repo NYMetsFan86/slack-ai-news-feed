@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# Check if required environment variables are set
+if [ -z "$OPENROUTER_API_KEY" ]; then
+    echo "Error: OPENROUTER_API_KEY environment variable is not set"
+    echo "Please set it before running this script:"
+    echo "  export OPENROUTER_API_KEY='your-api-key-here'"
+    exit 1
+fi
+
+if [ -z "$SLACK_WEBHOOK_URL" ]; then
+    echo "Error: SLACK_WEBHOOK_URL environment variable is not set"
+    echo "Please set it before running this script:"
+    echo "  export SLACK_WEBHOOK_URL='your-webhook-url-here'"
+    exit 1
+fi
+
 # Deploy the Cloud Function with proper environment variables
 gcloud functions deploy ai-news-summarizer \
     --source=. \
@@ -9,7 +24,7 @@ gcloud functions deploy ai-news-summarizer \
     --memory=512MB \
     --timeout=540s \
     --region=us-central1 \
-    --set-env-vars="ENVIRONMENT=production,FIRESTORE_COLLECTION=processed_items,OPENROUTER_API_KEY=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,SLACK_WEBHOOK_URL=https://hooks.slack.com/services/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,GOOGLE_CLOUD_PROJECT=slack-ai-news-feed" \
+    --set-env-vars="ENVIRONMENT=production,FIRESTORE_COLLECTION=processed_items,OPENROUTER_API_KEY=${OPENROUTER_API_KEY},SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL},GOOGLE_CLOUD_PROJECT=slack-ai-news-feed" \
     --project="slack-ai-news-feed" \
     --quiet
 
