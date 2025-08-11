@@ -23,57 +23,12 @@ class Config:
     # Environment
     ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
-    # RSS Feeds
+    # RSS Feeds - Expanded list for more content
     NEWS_FEEDS = [
-        {
-            "name": "The Verge",
-            "url": "https://www.theverge.com/rss/index.xml",
-            "type": "news"
-        },
-        {
-            "name": "TechCrunch",
-            "url": "https://techcrunch.com/feed/",
-            "type": "news"
-        },
-        {
-            "name": "NY Times Technology",
-            "url": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
-            "type": "news"
-        },
-        {
-            "name": "Wired",
-            "url": "https://www.wired.com/feed/",
-            "type": "news"
-        },
-        {
-            "name": "Science Daily AI",
-            "url": "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml",
-            "type": "news"
-        },
-        # AI Tool & Product Launch Feeds
-        {
-            "name": "Daily AI",
-            "url": "https://dailyai.com/feed",
-            "type": "news"
-        },
+        # Primary AI news sources
         {
             "name": "MarkTechPost",
             "url": "https://www.marktechpost.com/feed/",
-            "type": "news"
-        },
-        {
-            "name": "AI News - Artificial Intelligence News",
-            "url": "https://artificialintelligence-news.com/feed/rss/",
-            "type": "news"
-        },
-        {
-            "name": "BAIR Blog - Berkeley AI Research",
-            "url": "https://bair.berkeley.edu/blog/feed.xml",
-            "type": "news"
-        },
-        {
-            "name": "AI Business",
-            "url": "https://aibusiness.com/rss.xml",
             "type": "news"
         },
         {
@@ -84,6 +39,47 @@ class Config:
         {
             "name": "TechRepublic AI",
             "url": "https://www.techrepublic.com/rssfeeds/topic/artificial-intelligence/",
+            "type": "news"
+        },
+        {
+            "name": "VentureBeat AI",
+            "url": "https://feeds.feedburner.com/venturebeat/SZYF",
+            "type": "news"
+        },
+        {
+            "name": "TechCrunch AI",
+            "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+            "type": "news"
+        },
+        {
+            "name": "AI Business",
+            "url": "https://aibusiness.com/rss.xml",
+            "type": "news"
+        },
+        {
+            "name": "Daily AI",
+            "url": "https://dailyai.com/feed",
+            "type": "news"
+        },
+        # Additional sources for more content
+        {
+            "name": "MIT Technology Review AI",
+            "url": "https://www.technologyreview.com/feed/",
+            "type": "news"
+        },
+        {
+            "name": "The Information",
+            "url": "https://www.theinformation.com/feed",
+            "type": "news"
+        },
+        {
+            "name": "Axios AI",
+            "url": "https://www.axios.com/technology/artificial-intelligence/feed",
+            "type": "news"
+        },
+        {
+            "name": "AI News",
+            "url": "https://artificialintelligence-news.com/feed/",
             "type": "news"
         }
     ]
@@ -111,13 +107,13 @@ class Config:
         }
     ]
 
-    # Processing Configuration
-    MAX_ARTICLES_PER_FEED = 2  # Limit articles per feed to avoid overwhelming (reduced due to more feeds)
-    MAX_NEWS_ITEMS = 5  # Maximum news items in digest (increased to accommodate AI tool feeds)
+    # Processing Configuration - Balanced for content and speed
+    MAX_ARTICLES_PER_FEED = 2  # 2 articles per feed for more content
+    MAX_NEWS_ITEMS = 8  # Maximum news items in digest
     MAX_PODCAST_ITEMS = 3  # Maximum podcast items in digest
-    MAX_RETRIES = 3
-    RETRY_DELAY = 2  # seconds
-    REQUEST_TIMEOUT = 30  # seconds
+    MAX_RETRIES = 2  # Reduced retries for faster execution
+    RETRY_DELAY = 1  # seconds
+    REQUEST_TIMEOUT = 15  # seconds (balanced timeout)
 
     # Summarization Configuration
     SUMMARY_BULLET_POINTS = 5  # Number of bullet points for summaries

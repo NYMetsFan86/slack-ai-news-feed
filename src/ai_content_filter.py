@@ -45,13 +45,17 @@ class AIContentFilter:
     # Strong exclusion patterns - definitely not AI content
     EXCLUDE_PATTERNS: List[Tuple[str, str]] = [
         # Gaming and entertainment
+        ('nintendo', 'switch'), ('nintendo', 'console'), ('nintendo', 'game'),
         ('nintendo', 'showcase'), ('gaming', 'console'), ('video game', 'release'),
+        ('switch 2', 'accessories'), ('switch 2', 'case'), ('switch 2', 'controller'),
         ('streaming', 'service'), ('netflix', 'show'), ('disney', 'content'),
         
-        # Hardware reviews (unless AI-specific)
+        # Hardware reviews and accessories (unless AI-specific)
         ('laptop', 'review'), ('smartphone', 'review'), ('headphone', 'review'),
         ('speaker', 'review'), ('monitor', 'review'), ('keyboard', 'review'),
         ('walking pad', 'review'), ('treadmill', 'review'), ('fitness', 'equipment'),
+        ('accessories', 'case'), ('accessories', 'controller'), ('accessories', 'charger'),
+        ('best', 'accessories'), ('top', 'accessories'), ('gaming', 'accessories'),
         
         # General tech infrastructure
         ('broadband', 'provider'), ('internet', 'outage'), ('wifi', 'router'),
@@ -69,7 +73,10 @@ class AIContentFilter:
         # Other non-AI tech
         ('cryptocurrency', 'price'), ('bitcoin', 'mining'), ('blockchain', 'network'),
         ('nft', 'collection'), ('metaverse', 'platform'), ('vr', 'headset'),
-        ('website', 'error'), ('coding', 'bug'), ('server', 'outage')
+        ('website', 'error'), ('coding', 'bug'), ('server', 'outage'),
+        ('food delivery', 'startup'), ('delivery', 'app'), ('chowdeck', 'funding'),
+        ('matter', 'update'), ('smart home', 'standard'), ('hyundai', 'ioniq'),
+        ('keyless', 'entry'), ('security', 'hole')
     ]
     
     # Topics that need very specific AI context
@@ -101,7 +108,10 @@ class AIContentFilter:
             'BAIR Blog - Berkeley AI Research', 'AI Business',
             'The AI Daily Brief', 'AI News in 5 Minutes or Less',
             'AI Lawyer Talking Tech', 'The Neuron',
-            'Analytics India Magazine'
+            'Analytics India Magazine', 'MIT News - Artificial Intelligence',
+            'VentureBeat AI', 'TechCrunch AI', 'The Verge AI',
+            'Ars Technica AI', 'Engadget AI', 'OpenAI Blog',
+            'Google AI Blog', 'DeepMind Blog'
         }
         
         if item.get('feed_name') in ai_specific_feeds:
@@ -113,6 +123,17 @@ class AIContentFilter:
             if pattern1 in full_text and pattern2 in full_text:
                 logger.debug(f"Excluding '{item.get('title')}' - matches exclusion pattern: {pattern1} + {pattern2}")
                 return False
+        
+        # Additional exclusion: Nintendo, gaming accessories, non-AI hardware
+        strong_exclude_terms = {
+            'nintendo switch', 'switch 2', 'gaming controller', 'gaming case',
+            'gaming charger', 'gaming accessories', 'best nintendo',
+            'food delivery', 'delivery startup', 'matter update',
+            'smart home standard', 'keyless entry', 'car security'
+        }
+        if any(term in full_text for term in strong_exclude_terms):
+            logger.debug(f"Excluding '{item.get('title')}' - contains strong exclusion term")
+            return False
         
         # Additional check: If "AI" appears only in parentheses or as a minor feature, skip
         if re.search(r'\(ai[^)]*\)', title) and not any(kw in title for kw in cls.PRIMARY_AI_KEYWORDS):

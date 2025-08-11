@@ -114,8 +114,10 @@ class RSSParser:
         for feed_config in Config.get_all_feeds():
             feed = self.fetch_feed(feed_config['url'], feed_config['name'])
             if feed:
-                # Use 72 hours for podcasts to catch weekend releases
-                hours_back = 72 if feed_config['type'] == 'podcast' else 24
+                # Use longer time windows to ensure we get content
+                # 48 hours for news (to catch yesterday's news)
+                # 96 hours for podcasts (to catch weekly releases)
+                hours_back = 96 if feed_config['type'] == 'podcast' else 48
                 items = self.extract_feed_items(feed, feed_config, hours_back=hours_back)
                 all_items[feed_config['type']].extend(items)
                 logger.info(f"Extracted {len(items)} items from {feed_config['name']} (last {hours_back} hours)")
